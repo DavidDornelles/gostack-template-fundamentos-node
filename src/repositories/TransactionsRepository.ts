@@ -28,31 +28,38 @@ class TransactionsRepository {
       throw Error('There is no transaction registered.');
     }
 
-    let income = 0;
-    let outcome = 0;
-    let total = 0;
+    const balance = {
+      income: 0,
+      outcome: 0,
+      total: 0,
+    };
 
     this.transactions.map(transaction => {
       if (transaction.type === 'income') {
-        income += transaction.value;
+        balance.income += transaction.value;
       } else {
-        outcome += transaction.value;
+        balance.outcome += transaction.value;
       }
 
-      total = income - outcome;
-      return total;
+      balance.total = balance.income - balance.outcome;
+      return balance.total;
     });
-
-    const balance = {
-      income,
-      outcome,
-      total,
-    };
 
     return balance;
   }
 
   public create({ title, value, type }: CreateTransactionDTO): Transaction {
+    if (this.transactions.length > 0) {
+      const balance = this.getBalance();
+      const result = balance.total - value;
+
+      if (type === 'outcome' && result < 0) {
+        throw Error(
+          'You cannot create a outcome transaction without a valid balance.',
+        );
+      }
+    }
+
     const transaction = new Transaction({
       title,
       value,
