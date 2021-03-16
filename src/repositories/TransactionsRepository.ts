@@ -23,9 +23,34 @@ class TransactionsRepository {
     return this.transactions;
   }
 
-  // public getBalance(): Balance {
-  //   // TODO
-  // }
+  public getBalance(): Balance {
+    if (this.transactions.length <= 0) {
+      throw Error('There is no transaction registered.');
+    }
+
+    let income = 0;
+    let outcome = 0;
+    let total = 0;
+
+    this.transactions.map(transaction => {
+      if (transaction.type === 'income') {
+        income += transaction.value;
+      } else {
+        outcome += transaction.value;
+      }
+
+      total = income - outcome;
+      return total;
+    });
+
+    const balance = {
+      income,
+      outcome,
+      total,
+    };
+
+    return balance;
+  }
 
   public create({ title, value, type }: CreateTransactionDTO): Transaction {
     const transaction = new Transaction({
